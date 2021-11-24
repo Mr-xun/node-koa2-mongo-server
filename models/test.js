@@ -8,12 +8,12 @@ const mongoose = require('mongoose');
 // const Obj = mongoose.model('names', schema);
 
 //系统用户模型对象
-const userSchema = new mongoose.Schema({
+const testSchema = new mongoose.Schema({
     username:String,
     pwd:String
 })
-const User = mongoose.model('users',userSchema)
+const Test = mongoose.model('test',testSchema)
 
 module.exports = {
-    User
+    Test
 }
