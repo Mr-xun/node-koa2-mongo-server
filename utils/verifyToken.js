@@ -1,5 +1,5 @@
 const JWT = require('jsonwebtoken');
-const TOKEN_CONFIG = require('../config/token')
+const TOKEN_CONFIG = require('../config/token.config')
 
 const verify = {
     //设置token
