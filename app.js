@@ -10,6 +10,7 @@ const cors = require('koa2-cors');
 const koajwt = require('koa-jwt')
 const TOKEN_CONFIG = require('./config/token.config');
 const veriy = require('./utils/verifyToken')
+const response = require('./middleware/response')
 //连接数据库
 MongoConnect()
 
@@ -77,7 +78,8 @@ app.use(async (ctx, next) => {
     const ms = new Date() - start
     console.log(`${ctx.method} ${ctx.url} - ${ms}ms`)
 })
-
+//统一返回
+app.use(response);
 // routes
 app.use(index.routes(), index.allowedMethods())
 app.use(test.routes(), test.allowedMethods())

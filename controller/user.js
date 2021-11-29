@@ -8,7 +8,6 @@ const userLogin = async ctx => {
     await Users.findOne({ username, password }).then(async res => {
         if (res) {
             const token = await verify.setToken({ username, _id: res._id })
-            console.log(token)
             ctx.body = {
                 code: 200,
                 msg: '登录成功',
@@ -28,7 +27,7 @@ const userLogin = async ctx => {
     }).catch(err => {
         console.error(err)
         ctx.body = {
-            code: -1,
+            code: 500,
             msg: '登录异常',
             data: null
         }
@@ -51,7 +50,7 @@ const userRegister = async ctx => {
     let dbResult = await Users.create({ username, password }).catch(err => {
         console.error(err);
         ctx.body = {
-            code: -1,
+            code: 500,
             msg: '注册异常',
             errorMsg: err,
             data: null
@@ -80,7 +79,7 @@ const userRegister = async ctx => {
 const userVerify = async ctx => {
     try {
         let token = ctx.header[TOKEN_CONFIG.header];
-        console.log(token,ctx.header,66)
+        console.log(token, ctx.header, 66)
         token = token.replace('Bearer ', '')
         let tokenInfo = await verify.getToken(token);
         let dbResult = await Users.findOne({ _id: tokenInfo._id })
@@ -102,15 +101,56 @@ const userVerify = async ctx => {
     } catch (err) {
         console.error(err);
         ctx.body = {
-            code: -1,
+            code: 500,
             msg: '用户认证异常',
             errorMsg: err,
             data: null
         }
     }
 }
+
+//用户列表
+const userList = async ctx => {
+    let { pageNum, pageSize, username } = ctx.query;
+    if (!pageNum || isNaN(Number(pageNum))) {
+        pageNum = 1
+    } else {
+        pageNum = Number(pageNum)
+    }
+
+    if (!pageSize || isNaN(Number(pageSize))) {
+        pageSize = 10
+    } else {
+        pageSize = Number(pageSize)
+    }
+    let queryParams = {}
+    if (username) queryParams.username = username
+    //数据总数
+    let total = await Users.find(queryParams).count() || 0;
+    let pageSizes = Math.ceil(total / pageSize);
+    let dbResult = await Users.find(queryParams).skip((pageNum - 1) * pageSize).limit(pageSize).catch(err => {
+        console.error(err);
+        ctx.body = {
+            code: 500,
+            msg: '查询异常',
+            errorMsg: err,
+            data: null
+        }
+    });
+    ctx.body = {
+        code: 200,
+        msg: '查询成功',
+        data: {
+            rows: dbResult,
+            total,
+            currentPage: pageNum,
+            pageSizes
+        }
+    }
+}
 module.exports = {
     userLogin,
     userRegister,
-    userVerify
+    userVerify,
+    userList
 }

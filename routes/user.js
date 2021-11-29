@@ -12,4 +12,7 @@ router.post('/register',userCtl.userRegister)
 //用户认证
 router.post('/verify',userCtl.userVerify)
 
+//用户列表
+router.get('/list',userCtl.userList)
+
 module.exports = router;
