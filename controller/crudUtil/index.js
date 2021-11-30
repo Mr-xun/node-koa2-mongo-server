@@ -92,22 +92,15 @@ const del = (model, whele, ctx) => (
  * @param {object} ctx 执行上下文
  * @returns 
  */
-const find = (model, where, ctx) => (
-    model.find(where).then(res => {
-        ctx.body = {
-            code: 200,
-            msg: '查找成功',
-            data: res
-        }
-    }).catch(err => {
+const findAll = async (model, where, ctx) => {
+    where.is_delete = { $ne: 1 }//过滤已删除状态
+
+    let rows = await model.find(where).catch(err => {
         console.error(err)
-        ctx.body = {
-            code: -1,
-            msg: '查找出现异常',
-            data: err
-        }
+        ctx.body = resReturn.error(err)
     })
-)
+    ctx.body = resReturn.success({ rows }, '查询成功')
+}
 
 
 /**
@@ -120,27 +113,27 @@ const find = (model, where, ctx) => (
 const findPage = async (model, where, ctx) => {
     let { pageNum, pageSize } = where;
     let pager = utils.setPager(pageNum, pageSize)
-    let query = {
-        is_delete: { $ne: 1 },
-        ...where
-    }
-    delete query.pageNum
-    delete query.pageSize
+
+    where.is_delete = { $ne: 1 }//过滤已删除状态
+
+    //删除页码参数
+    delete where.pageNum
+    delete where.pageSize
 
     //数据总数
-    let total = await model.find(query).count() || 0;
-    let pageSizes = Math.ceil(total / pager.pageSize);
-    let dbResult = await model.find(query).skip(pager.pageSkip).limit(pager.pageSize).catch(err => {
+    let total = await model.find(where).count() || 0;
+    let pages = Math.ceil(total / pager.pageSize);
+
+    let rows = await model.find(where).skip(pager.pageSkip).limit(pager.pageSize).catch(err => {
         console.error(err);
         ctx.body = resReturn.error(err)
     });
-    let resData = {
-        rows: dbResult,
+    let result = {
+        rows,
         total,
-        currentPage: pager.pageNum,
-        pageSizes
+        pages
     }
-    ctx.body = resReturn.success(resData)
+    ctx.body = resReturn.success(result, '查询成功')
 }
 
 
@@ -151,18 +144,37 @@ const findPage = async (model, where, ctx) => {
  * @param {object} ctx 执行上下文
  * @returns 
  */
-const findOne = (model, where, ctx) => (
-    model.findOne(where).then(res => {
+const findOne = async (model, where, ctx) => {
+    where.is_delete = { $ne: 1 }//过滤已删除状态
+
+    let result = await model.findOne(where).catch(err => {
+        console.error(err)
+        ctx.body = resReturn.error(err)
+    })
+    ctx.body = resReturn.success({ result }, '查询成功')
+}
+
+/**
+ * @description 批量修改数据的公共方法
+ * @param {object} model SchemaModel
+ * @param {object} where 查询条件
+ * @param {object} params 修改字段参数
+ * @param {object} ctx 执行上下文
+ * @returns 
+ */
+const updateMany = (model, whele, pramas, ctx) => (
+    model.updateMany(whele, pramas).then(res => {
+        console.log(res);
         ctx.body = {
             code: 200,
-            msg: '查找成功',
+            msg: '修改成功',
             data: res
         }
     }).catch(err => {
         console.error(err)
         ctx.body = {
             code: -1,
-            msg: '查找出现异常',
+            msg: '修改出现异常',
             data: err
         }
     })
@@ -171,7 +183,8 @@ module.exports = {
     add,
     update,
     del,
-    find,
+    findAll,
     findOne,
-    findPage
+    findPage,
+    updateMany
 }

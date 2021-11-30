@@ -15,4 +15,7 @@ router.post('/verify',userCtl.userVerify)
 //用户列表
 router.get('/list',userCtl.userList)
 
+//用户删除
+router.delete('/delete/:ids',userCtl.userBatchDel)
+
 module.exports = router;

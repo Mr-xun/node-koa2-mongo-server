@@ -98,9 +98,24 @@ const userList = async ctx => {
     if (username) where.username = new RegExp(username);
     await crud.findPage(Users, where, ctx)
 }
+
+//用户批量删除
+const userBatchDel = async ctx => {
+    let { ids } = ctx.params;
+    if (!ids || ids == 'undefined') {
+        ctx.body = resReturn.fail('删除失败')
+        return
+    }
+    let deleteIds = ids.split(',')
+    await Users.updateMany({ _id: { $in: deleteIds } }, { is_delete: 1 }).catch(err => {
+        ctx.body = resReturn.error(err)
+    })
+    ctx.body = resReturn.success(null)
+}
 module.exports = {
     userLogin,
     userRegister,
     userVerify,
-    userList
+    userList,
+    userBatchDel
 }
