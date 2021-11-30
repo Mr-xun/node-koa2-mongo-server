@@ -9,8 +9,8 @@ const MongoConnect = require('./db')
 const cors = require('koa2-cors');
 const koajwt = require('koa-jwt')
 const TOKEN_CONFIG = require('./config/token.config');
-const veriy = require('./utils/verifyToken')
-const response = require('./middleware/response')
+const resReturn = require('./utils/resReturn')
+
 //连接数据库
 MongoConnect()
 
@@ -54,11 +54,7 @@ app.use(async (ctx, next) => {
         if (err.status === 401) {
             // 自定义返回结果
             ctx.status = 401;
-            ctx.body = {
-                code: 401,
-                msg: 'The token is invalid',
-                error: err.name + ':' + err.message
-            }
+            ctx.body = resReturn.error(err.name + ':' + err.message, 'The token is invalid', resReturn.CODE.AUTH_ERROR)
         } else {
             throw err;
         }
@@ -78,8 +74,6 @@ app.use(async (ctx, next) => {
     const ms = new Date() - start
     console.log(`${ctx.method} ${ctx.url} - ${ms}ms`)
 })
-//统一返回
-app.use(response);
 // routes
 app.use(index.routes(), index.allowedMethods())
 app.use(test.routes(), test.allowedMethods())
