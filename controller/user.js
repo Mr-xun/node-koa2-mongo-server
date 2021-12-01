@@ -36,6 +36,11 @@ const userLogin = async ctx => {
 
 }
 
+//用户登出
+const userLogout = async ctx => {
+    ctx.body = resReturn.success(null,'登出成功')
+}
+
 //用户注册
 const userRegister = async ctx => {
     let { username, password } = ctx.request.body;
@@ -114,6 +119,7 @@ const userBatchDel = async ctx => {
 }
 module.exports = {
     userLogin,
+    userLogout,
     userRegister,
     userVerify,
     userList,

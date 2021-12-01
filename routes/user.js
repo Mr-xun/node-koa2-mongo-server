@@ -6,6 +6,9 @@ router.prefix('/user')
 //用户登录
 router.post('/login',userCtl.userLogin)
 
+//用户登录
+router.post('/logout',userCtl.userLogout)
+
 //用户注册
 router.post('/register',userCtl.userRegister)
 

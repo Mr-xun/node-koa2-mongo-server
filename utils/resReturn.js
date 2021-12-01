@@ -10,7 +10,7 @@ module.exports = {
         return {
             code,
             msg,
-            data: { ...data },
+            data: data ? { ...data } : null,
         };
     },
     fail(msg = "fail", code = CODE.PARPM_ERROR, data = null) {
