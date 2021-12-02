@@ -12,7 +12,7 @@ const schema = new mongoose.Schema({
         type: String,
         default: "",
     },
-    mobile: {                //手机号
+    mobile: {                //联系电话
         type: String,
         default: '',
     },

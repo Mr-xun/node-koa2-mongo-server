@@ -17,33 +17,27 @@ const userLogin = async ctx => {
         return
     }
     password = md5(password)
-    await Users.findOne({ username, password }).then(async res => {
-        if (res) {
-            const token = await verify.setToken({ username, _id: res._id })
-            let resData = {
-                token,
-                userInfo: res
-            }
-            ctx.body = resReturn.success(resData, '登录成功')
-        } else {
-            ctx.body = resReturn.fail('登录失败,用户名或密码错误')
+    let result = crud.findOne(Users, { username, password }, ctx);
+    if (result) {
+        const token = await verify.setToken({ username, _id: res._id })
+        let resData = {
+            token,
+            userInfo: res
         }
-
-    }).catch(err => {
-        console.error(err)
-        ctx.body = resReturn.error(err)
-    })
-
+        ctx.body = resReturn.success(resData, '登录成功')
+    } else {
+        ctx.body = resReturn.fail('登录失败,用户名或密码错误')
+    }
 }
 
 //用户登出
 const userLogout = async ctx => {
-    ctx.body = resReturn.success(null,'登出成功')
+    ctx.body = resReturn.success(null, '登出成功')
 }
 
 //用户注册
 const userRegister = async ctx => {
-    let { username, password } = ctx.request.body;
+    let { username, password, avatar, mobile, role } = ctx.request.body;
     if (!username) {
         ctx.body = resReturn.fail('用户名不能为空')
         return
@@ -53,26 +47,39 @@ const userRegister = async ctx => {
         return
     }
     password = md5(password)
-    let isExist = !!await Users.findOne({ username, password })//用户是否存在
+
+    let isExist = !!await crud.findOne(Users, { username, password }, ctx)//用户是否存在
+
     if (isExist) {
         ctx.body = resReturn.fail('该用户已存在')
         return
     }
-    let dbResult = await Users.create({ username, password }).catch(err => {
-        console.error(err);
-        ctx.body = resReturn.error(err)
-    })
-    if (dbResult) {
-        const token = await verify.setToken({ username, _id: dbResult._id })
-        delete dbResult.password
-        let resData = {
-            token,
-            userInfo: dbResult
-        }
-        ctx.body = resReturn.success(resData, '注册成功')
-    } else {
-        ctx.body = resReturn.fail('注册失败')
+    let params = {
+        username, password, avatar, mobile, role
     }
+    await crud.add(Users, params, ctx)
+}
+
+//用户修改
+const userUpdate = async ctx => {
+    let { username, avatar, mobile, role, _id } = ctx.request.body;
+    if (!_id) {
+        ctx.body = resReturn.fail('缺少用户_id参数')
+        return
+    }
+    if (!username) {
+        ctx.body = resReturn.fail('用户名不能为空')
+        return
+    }
+    let isExist = !!await crud.findOne(Users, { username: { $in: username }, _id: { $nin: _id } }, ctx)//用户是否存在 
+    if (isExist) {
+        ctx.body = resReturn.fail('该用户名已存在')
+        return
+    }
+    let params = {
+        username, avatar, mobile, role
+    }
+    await crud.updateOne(Users, { _id }, params, ctx)
 }
 
 //验证用户登录
@@ -81,7 +88,7 @@ const userVerify = async ctx => {
         let token = ctx.header[TOKEN_CONFIG.header];
         token = token.replace('Bearer ', '')
         let tokenInfo = await verify.getToken(token);
-        let dbResult = await Users.findOne({ _id: tokenInfo._id })
+        let dbResult = await crud.findOne(Users, { _id: tokenInfo._id }, ctx)
         if (dbResult) {
             ctx.body = resReturn.success({ userInfo: dbResult }, '用户认证成功')
         } else {
@@ -112,15 +119,13 @@ const userBatchDel = async ctx => {
         return
     }
     let deleteIds = ids.split(',')
-    await Users.updateMany({ _id: { $in: deleteIds } }, { is_delete: 1 }).catch(err => {
-        ctx.body = resReturn.error(err)
-    })
-    ctx.body = resReturn.success(null)
+    await crud.updateMany(Users, { _id: { $in: deleteIds } }, { is_delete: 1 }, ctx)
 }
 module.exports = {
     userLogin,
     userLogout,
     userRegister,
+    userUpdate,
     userVerify,
     userList,
     userBatchDel

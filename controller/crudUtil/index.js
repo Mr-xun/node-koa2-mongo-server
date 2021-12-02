@@ -7,82 +7,68 @@ const resReturn = require('../../utils/resReturn')
  * @param {object} ctx 执行上下文
  * @returns 
  */
-const add = (model, params, ctx) => (
-    model.create(params).then(res => {
-        if (res) {
-            ctx.body = {
-                code: 200,
-                msg: '添加成功',
-                data: res
-            }
-        } else {
-            ctx.body = {
-                code: -1,
-                msg: '添加失败',
-                data: ''
-            }
-        }
-
-    }).catch(err => {
+const add = async (model, params, ctx) => {
+    let result = await model.create(params).catch(err => {
         console.error(err)
-        ctx.body = {
-            code: -1,
-            msg: '添加出现异常',
-            data: err
-        }
+        ctx.body = resReturn.error(err)
     })
-)
+    if (result) {
+        ctx.body = resReturn.success(null, '创建成功')
+    } else {
+        ctx.body = resReturn.fail('创建失败')
+    }
+    return result
+}
 
 /**
- * @description 修改数据的公共方法
+ * @description 单挑数据修改的公共方法
  * @param {object} model SchemaModel
  * @param {object} where 查询条件
  * @param {object} params 修改字段参数
  * @param {object} ctx 执行上下文
  * @returns 
  */
-const update = (model, whele, pramas, ctx) => (
-    model.updateOne(whele, pramas).then(res => {
-        console.log(res);
-        ctx.body = {
-            code: 200,
-            msg: '修改成功',
-            data: res
-        }
-    }).catch(err => {
+const updateOne = async (model, whele, params, ctx) => {
+    const result = await model.updateOne(whele, params).catch(err => {
         console.error(err)
-        ctx.body = {
-            code: -1,
-            msg: '修改出现异常',
-            data: err
-        }
+        ctx.body = resReturn.error(err)
     })
-)
-
+    ctx.body = resReturn.success(null)
+    return result
+}
+/**
+ * @description 批量修改数据的公共方法
+ * @param {object} model SchemaModel
+ * @param {object} where 查询条件
+ * @param {object} params 修改字段参数
+ * @param {object} ctx 执行上下文
+ * @returns 
+ */
+const updateMany = async (model, whele, params, ctx) => {
+    const result = await model.updateMany(whele, params).catch(err => {
+        console.error(err)
+        ctx.body = resReturn.error(err)
+    })
+    ctx.body = resReturn.success(null)
+    return result
+}
 
 /**
- * @description 删除数据的公共方法
+ * @description 物理删除单条数据的公共方法
  * @param {object} model SchemaModel
  * @param {object} where 查询条件
  * @param {object} ctx 执行上下文
  * @returns 
  */
-const del = (model, whele, ctx) => (
-    model.findOneAndDelete(whele).then(res => {
-        ctx.body = {
-            code: 200,
-            msg: '删除成功',
-            data: res
-        }
-    }).catch(err => {
+const deleteOne = async (model, whele, ctx) => {
+    const result = await model.findOneAndDelete(whele).catch(err => {
         console.error(err)
-        ctx.body = {
-            code: -1,
-            msg: '删除出现异常',
-            data: err
-        }
+        ctx.body = resReturn.error(err)
+
     })
-)
+    ctx.body = resReturn.success(null)
+    return result
+}
 
 
 /**
@@ -94,12 +80,12 @@ const del = (model, whele, ctx) => (
  */
 const findAll = async (model, where, ctx) => {
     where.is_delete = { $ne: 1 }//过滤已删除状态
-
     let rows = await model.find(where).catch(err => {
         console.error(err)
         ctx.body = resReturn.error(err)
     })
-    ctx.body = resReturn.success({ rows }, '查询成功')
+    ctx.body = resReturn.success({ rows })
+    return rows
 }
 
 
@@ -114,7 +100,8 @@ const findPage = async (model, where, ctx) => {
     let { pageNum, pageSize } = where;
     let pager = utils.setPager(pageNum, pageSize)
 
-    where.is_delete = { $ne: 1 }//过滤已删除状态
+    //过滤已删除状态
+    where.is_delete = { $ne: 1 }
 
     //删除页码参数
     delete where.pageNum
@@ -133,7 +120,9 @@ const findPage = async (model, where, ctx) => {
         total,
         pages
     }
-    ctx.body = resReturn.success(result, '查询成功')
+    ctx.body = resReturn.success(result)
+    return rows
+
 }
 
 
@@ -146,45 +135,20 @@ const findPage = async (model, where, ctx) => {
  */
 const findOne = async (model, where, ctx) => {
     where.is_delete = { $ne: 1 }//过滤已删除状态
-
     let result = await model.findOne(where).catch(err => {
         console.error(err)
         ctx.body = resReturn.error(err)
     })
-    ctx.body = resReturn.success({ result }, '查询成功')
+    ctx.body = resReturn.success({ result })
+    return result
 }
 
-/**
- * @description 批量修改数据的公共方法
- * @param {object} model SchemaModel
- * @param {object} where 查询条件
- * @param {object} params 修改字段参数
- * @param {object} ctx 执行上下文
- * @returns 
- */
-const updateMany = (model, whele, pramas, ctx) => (
-    model.updateMany(whele, pramas).then(res => {
-        console.log(res);
-        ctx.body = {
-            code: 200,
-            msg: '修改成功',
-            data: res
-        }
-    }).catch(err => {
-        console.error(err)
-        ctx.body = {
-            code: -1,
-            msg: '修改出现异常',
-            data: err
-        }
-    })
-)
 module.exports = {
     add,
-    update,
-    del,
+    deleteOne,
     findAll,
     findOne,
     findPage,
+    updateOne,
     updateMany
 }

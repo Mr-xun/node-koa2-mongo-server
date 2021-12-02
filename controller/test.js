@@ -10,7 +10,7 @@ const userAdd = async (ctx) => {
 //修改系统用户
 const userUpdate = async (ctx) => {
     let params = ctx.request.body;
-    await crud.update(Test, {
+    await crud.updateOne(Test, {
         _id: params._ids
     }, {
         username: params.username,
@@ -21,7 +21,7 @@ const userUpdate = async (ctx) => {
 //删除系统用户
 const userDel = async (ctx) => {
     let { _id } = ctx.request.body;
-    await crud.update(Test, { _id }, ctx)
+    await crud.updateOne(Test, { _id }, ctx)
 }
 
 //查询系统用户
