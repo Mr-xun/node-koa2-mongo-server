@@ -17,12 +17,12 @@ const userLogin = async ctx => {
         return
     }
     password = md5(password)
-    let result = crud.findOne(Users, { username, password }, ctx);
+    let result = await crud.findOne(Users, { username, password }, ctx);
     if (result) {
-        const token = await verify.setToken({ username, _id: res._id })
+        const token = await verify.setToken({ username, _id: result._id })
         let resData = {
             token,
-            userInfo: res
+            userInfo: result
         }
         ctx.body = resReturn.success(resData, '登录成功')
     } else {
