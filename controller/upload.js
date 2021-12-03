@@ -2,13 +2,13 @@ const resReturn = require('../utils/resReturn')
 const multer = require('koa-multer');
 const fs = require('fs')
 const path = require('path')
-const sd = require('silly-datetime');
+const moment = require('moment-timezone')
+moment.tz.setDefault("Asia/Shanghai");
 let storage = multer.diskStorage({
     //设置文件存储位置
     destination: (req, file, cb) => {
-        //使用第三方模块silly-datetime
-		var t = sd.format(new Date(), 'YYYYMMDD');
-        let dir = "./public/uploads/" +t;
+        var t = moment().format('YYYYMMDD')
+        let dir = "./public/uploads/" + t;
         //判断路径是否存在
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true })

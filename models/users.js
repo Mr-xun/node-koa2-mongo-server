@@ -1,8 +1,9 @@
 const mongoose = require('mongoose');
-
+const moment = require('moment-timezone')  //设置mongoose时区
+moment.tz.setDefault("Asia/Shanghai");
 //用户对象
-const ObjectId = mongoose.Schema.Types.ObjectId;
 const schema = new mongoose.Schema({
+    user_id: Number,        //用户id
     username: String,       //用户名
     password: {             //密码
         type: String,
@@ -25,10 +26,20 @@ const schema = new mongoose.Schema({
         type: Number,
         default: 0,
         select: false
+    },
+    create_time: {
+        type: String,
+    },
+    update_time: {
+        type: String,
     }
 }, {
     versionKey: false, // You should be aware of the outcome after set to false
-    timestamps: { createdAt: 'createTime', updatedAt: 'updateTime' }
+    timestamps: {
+        currentTime: () => {
+            return moment().format('YYYY-MM-DD HH:mm:ss');
+        }, createdAt: 'create_time', updatedAt: 'update_time'
+    }
 });
 
 const User = mongoose.model('users', schema)

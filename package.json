@@ -34,6 +34,8 @@
     "koa-views": "^6.2.0",
     "koa2-cors": "^2.0.6",
     "md5": "^2.3.0",
+    "moment": "^2.29.1",
+    "moment-timezone": "^0.5.34",
     "mongoose": "^6.0.12",
     "pug": "^2.0.3",
     "silly-datetime": "^0.1.2"

@@ -18,6 +18,7 @@ const index = require('./routes/index')
 const test = require('./routes/test')
 const user = require('./routes/user')
 const upload = require('./routes/upload')
+const counter = require('./routes/counter')
 
 app.use(
     cors({
@@ -79,6 +80,7 @@ app.use(index.routes(), index.allowedMethods())
 app.use(test.routes(), test.allowedMethods())
 app.use(user.routes(), user.allowedMethods())
 app.use(upload.routes(), upload.allowedMethods())
+app.use(counter.routes(), counter.allowedMethods())
 
 // error-handling
 app.on('error', (err, ctx) => {

@@ -28,8 +28,8 @@ const add = async (model, params, ctx) => {
  * @param {object} ctx 执行上下文
  * @returns 
  */
-const updateOne = async (model, whele, params, ctx) => {
-    const result = await model.updateOne(whele, params).catch(err => {
+const updateOne = async (model, where, params, ctx) => {
+    const result = await model.updateOne(where, params).catch(err => {
         console.error(err)
         ctx.body = resReturn.error(err)
     })
@@ -44,8 +44,8 @@ const updateOne = async (model, whele, params, ctx) => {
  * @param {object} ctx 执行上下文
  * @returns 
  */
-const updateMany = async (model, whele, params, ctx) => {
-    const result = await model.updateMany(whele, params).catch(err => {
+const updateMany = async (model, where, params, ctx) => {
+    const result = await model.updateMany(where, params).catch(err => {
         console.error(err)
         ctx.body = resReturn.error(err)
     })
@@ -60,8 +60,8 @@ const updateMany = async (model, whele, params, ctx) => {
  * @param {object} ctx 执行上下文
  * @returns 
  */
-const deleteOne = async (model, whele, ctx) => {
-    const result = await model.findOneAndDelete(whele).catch(err => {
+const deleteOne = async (model, where, ctx) => {
+    const result = await model.findOneAndDelete(where).catch(err => {
         console.error(err)
         ctx.body = resReturn.error(err)
 
@@ -79,8 +79,10 @@ const deleteOne = async (model, whele, ctx) => {
  * @returns 
  */
 const findAll = async (model, where, ctx) => {
-    where.is_delete = { $ne: 1 }//过滤已删除状态
-    let rows = await model.find(where).catch(err => {
+    //过滤已删除状态
+    where.is_delete = { $ne: 1 }
+
+    let rows = await model.find(where, { _id: 0 }).catch(err => {
         console.error(err)
         ctx.body = resReturn.error(err)
     })
@@ -111,7 +113,7 @@ const findPage = async (model, where, ctx) => {
     let total = await model.find(where).count() || 0;
     let pages = Math.ceil(total / pager.pageSize);
 
-    let rows = await model.find(where).skip(pager.pageSkip).limit(pager.pageSize).catch(err => {
+    let rows = await model.find(where, { _id: 0 }).skip(pager.pageSkip).limit(pager.pageSize).catch(err => {
         console.error(err);
         ctx.body = resReturn.error(err)
     });
@@ -134,8 +136,9 @@ const findPage = async (model, where, ctx) => {
  * @returns 
  */
 const findOne = async (model, where, ctx) => {
-    where.is_delete = { $ne: 1 }//过滤已删除状态
-    let result = await model.findOne(where).catch(err => {
+    //过滤已删除状态
+    where.is_delete = { $ne: 1 }
+    let result = await model.findOne(where, { _id: 0 }).catch(err => {
         console.error(err)
         ctx.body = resReturn.error(err)
     })
